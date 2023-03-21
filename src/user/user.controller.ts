@@ -21,12 +21,11 @@ userRouter.get(
       const users: User[] = await userService.findAll(params);
 
       if (users.length) {
-        res.send(users);
-      } else {
-        res.send(
-          "User data is missing or does not match the search and filter criteria"
-        );
+        return res.send(users);
       }
+      return res.send(
+        "User data is missing or does not match the search and filter criteria"
+      );
     } catch (e) {
       res.status(500).send(e);
     }

@@ -10,8 +10,7 @@ export const getUsersByParams = (
       if (fullnameSearch && fullnameSearch !== user.fullName) return false;
       if (minAge && minAge > user.age) return false;
       if (maxAge && maxAge < user.age) return false;
-      if (type && type !== user.type) return false;
-      return true;
+      return !(type && type !== user.type);
     })
     .slice(0, limit);
 };
