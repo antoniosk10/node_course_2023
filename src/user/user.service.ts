@@ -1,19 +1,64 @@
-import { getUsersByParams } from "../utils";
-import { RequestParams } from "./types";
-import { User } from "./user.interface";
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { CreateUserDto } from './dto/create-user.dto';
+import { User } from './models/user.entity';
+import { QueryParams } from './types';
 
-const usersRepository: User[] = [
-  { id: 1, fullName: "Ivan Ivanov", age: 17, type: "student" },
-  { id: 2, fullName: "Aleksey Aleksandrovich", age: 44, type: "developer" },
-  { id: 3, fullName: "Azamat Karimov", age: 36, type: "manager" },
-  { id: 4, fullName: "Rustam Abdullayev", age: 32, type: "tester" },
-  { id: 5, fullName: "Valentina Gromova", age: 39, type: "manager" },
-  { id: 6, fullName: "Matvey Stepanov", age: 18, type: "student" },
-  { id: 7, fullName: "Oleg Semyonov", age: 23, type: "developer" },
-  { id: 8, fullName: "Alena Denisova", age: 19, type: "trainee" },
-  { id: 9, fullName: "Pavel Petrov", age: 21, type: "trainee" },
-];
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
+  ) {}
 
-export const findAll = async (params: RequestParams): Promise<User[]> => {
-  return getUsersByParams(params, usersRepository);
-};
+  async findAll(query: QueryParams): Promise<User[]> {
+    const { fullnameSearch, minAge, maxAge, type, limit } = query;
+    const result = this.usersRepository.createQueryBuilder('user');
+
+    if (fullnameSearch) {
+      result.andWhere('user.fullName = :fullnameSearch', { fullnameSearch });
+    }
+
+    if (minAge) {
+      result.andWhere('user.age >= :minAge', { minAge });
+    }
+
+    if (maxAge) {
+      result.andWhere('user.age <= :maxAge', { maxAge });
+    }
+
+    if (type) {
+      result.andWhere('user.type = :type', { type });
+    }
+
+    return result.take(limit).getMany();
+  }
+
+  async add(createUserDto: CreateUserDto): Promise<User> {
+    const user = new User();
+    user.fullName = createUserDto.fullName;
+    user.age = createUserDto.age;
+    user.type = createUserDto.type;
+
+    return this.usersRepository.save(user);
+  }
+
+  async update(id: number, createUserDto: CreateUserDto): Promise<User> {
+    const user = await this.findOne(id);
+    if (!user) throw new BadRequestException();
+    user.fullName = createUserDto.fullName;
+    user.age = createUserDto.age;
+    user.type = createUserDto.type;
+
+    return this.usersRepository.save(user);
+  }
+
+  async findOne(id: number): Promise<User | null> {
+    return this.usersRepository.findOneBy({ id });
+  }
+
+  async remove(id: number): Promise<void> {
+    await this.usersRepository.delete(id);
+  }
+}

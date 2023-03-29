@@ -1,6 +1,6 @@
-import { TypeUser } from "./user.interface";
+import { TypeUser } from './dto/create-user.dto';
 
-export type RequestParams = {
+export type QueryParams = {
   fullnameSearch?: string;
   minAge?: number;
   maxAge?: number;

@@ -1,33 +1,43 @@
-import express, { Request, Response } from "express";
-import { RequestParams } from "./types";
-import { User } from "./user.interface";
-import * as userService from "./user.service";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
+import { CreateUserDto } from './dto/create-user.dto';
+import { QueryParams } from './types';
+import { UserService } from './user.service';
 
-export const userRouter = express.Router();
+@Controller('users')
+export class UserController {
+  constructor(private readonly userService: UserService) {}
 
-userRouter.get(
-  "/",
-  async (req: Request<{}, {}, {}, RequestParams>, res: Response) => {
-    try {
-      const { fullnameSearch, minAge, maxAge, type, limit } = req.query;
-      const params: RequestParams = {
-        fullnameSearch,
-        minAge,
-        maxAge,
-        type,
-        limit,
-      };
-
-      const users: User[] = await userService.findAll(params);
-
-      if (users.length) {
-        return res.send(users);
-      }
-      return res.send(
-        "User data is missing or does not match the search and filter criteria"
-      );
-    } catch (e) {
-      res.status(500).send(e);
-    }
+  @Get()
+  findAll(@Query() query: QueryParams) {
+    return this.userService.findAll(query);
   }
-);
+
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.userService.findOne(id);
+  }
+
+  @Post()
+  add(@Body() createUserDto: CreateUserDto) {
+    return this.userService.add(createUserDto);
+  }
+
+  @Put(':id')
+  update(@Param('id') id: number, @Body() createUserDto: CreateUserDto) {
+    return this.userService.update(id, createUserDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: number) {
+    return this.userService.remove(id);
+  }
+}

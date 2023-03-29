@@ -1,5 +1,5 @@
-# How to run:
+# HOW TO RUN
 
 - `npm i`
-- create `.env` file with `PORT=YOUR_PORT` and `HOST=YOUR_HOST`
-- `npm run dev`
+- create `.env` from `example.env`
+- `npm start`
