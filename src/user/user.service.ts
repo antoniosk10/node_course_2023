@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './models/user.entity';
 import { QueryParams } from './types';
 
@@ -36,22 +37,14 @@ export class UserService {
   }
 
   async add(createUserDto: CreateUserDto): Promise<User> {
-    const user = new User();
-    user.fullName = createUserDto.fullName;
-    user.age = createUserDto.age;
-    user.type = createUserDto.type;
-
-    return this.usersRepository.save(user);
+    return this.usersRepository.save(createUserDto);
   }
 
-  async update(id: number, createUserDto: CreateUserDto): Promise<User> {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findOne(id);
     if (!user) throw new BadRequestException();
-    user.fullName = createUserDto.fullName;
-    user.age = createUserDto.age;
-    user.type = createUserDto.type;
 
-    return this.usersRepository.save(user);
+    return this.usersRepository.save({ ...user, ...updateUserDto });
   }
 
   async findOne(id: number): Promise<User | null> {
